@@ -1,0 +1,58 @@
+# Production on one EC2 instance. Postgres (RDS), Redis, S3 and SES are
+# external; their URLs and keys come from deploy/.env.production.
+#
+#   docker compose -f deploy/docker-compose.prod.yml build
+#   docker compose -f deploy/docker-compose.prod.yml run --rm migrate
+#   docker compose -f deploy/docker-compose.prod.yml up -d app worker
+#
+# nginx on the host terminates TLS and proxies to 127.0.0.1:3000 (see nginx.conf).
+name: rentaride-prod
+
+x-app: &app
+  image: rentaride:latest
+  build:
+    context: ..
+    args:
+      NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY:?set in your shell or deploy/.env}
+  env_file: .env.production
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: "20m", max-file: "5" }
+
+services:
+  app:
+    <<: *app
+    ports:
+      - "127.0.0.1:3000:3000"
+    # Next.js finishes in-flight requests on SIGTERM.
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/auth/me').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    <<: *app
+    command: ["npm", "run", "worker"]
+    stop_grace_period: 30s
+
+  migrate:
+    <<: *app
+    command: ["npm", "run", "db:migrate"]
+    restart: "no"
+    profiles: ["tools"]
+
+  # Optional: Redis on the instance if you don't use ElastiCache.
+  # Set REDIS_URL=redis://redis:6379 and start with --profile redis.
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    profiles: ["redis"]
+
+volumes:
+  redis-data:

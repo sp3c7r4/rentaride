@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example
+.backup
+.next-dev*.log
+.playwright-mcp
+.agents
+.claude
+.kiro
+docker
+uploads-dev
+coverage
+*.tsbuildinfo

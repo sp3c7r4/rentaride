@@ -1,0 +1,62 @@
+# Local development services for RentARide.
+# Start: docker compose up -d     Stop: docker compose down
+# Ports avoid other local projects (5432, 5434, 6379, 6380, 6382 are taken).
+name: rentaride
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rentaride
+      POSTGRES_PASSWORD: rentaride
+      POSTGRES_DB: rentaride
+    ports:
+      - "127.0.0.1:5436:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      # Creates the rentaride_test database on first start.
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rentaride -d rentaride"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6383:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Catches every email sent in development. Inbox: http://localhost:8026
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1026:1025"
+      - "127.0.0.1:8026:8025"
+
+  # S3-compatible storage (SeaweedFS; MinIO images are no longer published).
+  # The app creates its bucket on startup. S3 API: http://localhost:9010
+  storage:
+    image: chrislusf/seaweedfs:latest
+    restart: unless-stopped
+    command: ["server", "-dir=/data", "-s3", "-s3.port=8333", "-ip.bind=0.0.0.0"]
+    ports:
+      - "127.0.0.1:9010:8333"
+    volumes:
+      - storage-data:/data
+
+volumes:
+  postgres-data:
+  redis-data:
+  storage-data:
