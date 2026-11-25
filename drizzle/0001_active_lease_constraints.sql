@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX "leases_active_vehicle_key" ON "leases" USING btree ("vehicle_id") WHERE "leases"."status" = 'active';--> statement-breakpoint
+CREATE UNIQUE INDEX "leases_active_driver_key" ON "leases" USING btree ("driver_id") WHERE "leases"."status" = 'active';
