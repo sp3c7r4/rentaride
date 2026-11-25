@@ -66,7 +66,7 @@ export function Hero() {
               ].map(({ value, label }) => (
                 <div key={label} data-hero-stat className="flex flex-col gap-0.5">
                   <span className="text-xl font-bold text-white tabular-nums">{value}</span>
-                  <span className="text-xs text-zinc-500">{label}</span>
+                  <span className="text-xs text-zinc-400">{label}</span>
                 </div>
               ))}
             </div>
@@ -83,7 +83,7 @@ export function Hero() {
               alt="Yellow BMW M2 — available on RentARide"
               width={1941}
               height={810}
-              priority
+              loading="eager"
               className="w-full h-auto object-contain"
             />
           </div>
@@ -98,7 +98,7 @@ export function Hero() {
               <div className="flex flex-col gap-1.5 py-5 px-4 sm:px-6 lg:px-8 md:pr-6 md:pl-8">
                 <label
                   htmlFor="hero-location"
-                  className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500"
+                  className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400"
                 >
                   Location
                 </label>
@@ -111,7 +111,7 @@ export function Hero() {
                     id="hero-location"
                     type="text"
                     placeholder="City or state"
-                    className="h-9 w-full bg-transparent pl-6 text-sm text-white placeholder:text-zinc-600 outline-none"
+                    className="h-9 w-full bg-transparent pl-6 text-sm text-white placeholder:text-zinc-400 outline-none"
                   />
                 </div>
               </div>
@@ -122,7 +122,7 @@ export function Hero() {
               <div className="flex flex-col gap-1.5 py-5 px-4 sm:px-6 md:px-6">
                 <label
                   htmlFor="hero-start"
-                  className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500"
+                  className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400"
                 >
                   Start date
                 </label>
@@ -143,11 +143,11 @@ export function Hero() {
 
               {/* Schedule */}
               <div className="flex flex-col gap-1.5 py-5 px-4 sm:px-6 md:px-6">
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+                <label htmlFor="hero-schedule" className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
                   Schedule
                 </label>
                 <Select>
-                  <SelectTrigger className="h-9 w-full rounded-none border-0 bg-transparent px-0 text-sm text-zinc-400 shadow-none focus-visible:ring-0 focus-visible:border-0 data-placeholder:text-zinc-600 [&>svg]:text-zinc-500">
+                  <SelectTrigger id="hero-schedule" className="h-9 w-full rounded-none border-0 bg-transparent px-0 text-sm text-zinc-400 shadow-none focus-visible:ring-0 focus-visible:border-0 data-placeholder:text-zinc-400 [&>svg]:text-zinc-500">
                     <SelectValue placeholder="Repayment frequency" />
                   </SelectTrigger>
                   <SelectContent>

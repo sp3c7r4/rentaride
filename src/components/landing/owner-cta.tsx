@@ -3,7 +3,6 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Separator } from "@/components/ui/separator";
 import { ScrollReveal } from "./scroll-reveal";
 
 const points = [
@@ -22,7 +21,7 @@ const ledger = [
 
 export function OwnerCta() {
   return (
-    <section id="list" className="bg-zinc-950 py-24">
+    <section id="list" className="scroll-mt-16 bg-zinc-950 py-24">
       <ScrollReveal><div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid items-start gap-16 lg:grid-cols-2">
           {/* Left */}
@@ -62,13 +61,13 @@ export function OwnerCta() {
                 <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
               </Link>
               <Link
-                href="#how-it-works"
+                href="/pricing#owners"
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "lg" }),
                   "text-zinc-400 hover:text-white hover:bg-white/5"
                 )}
               >
-                See how it works
+                See owner pricing
               </Link>
             </div>
           </div>

@@ -6,13 +6,11 @@ const columns = {
   Product: [
     { label: "Browse cars", href: "/browse" },
     { label: "List your car", href: "/signup?role=owner" },
-    { label: "How it works", href: "#how-it-works" },
+    { label: "How it works", href: "/#how-it-works" },
     { label: "Pricing", href: "/pricing" },
   ],
   Company: [
     { label: "About", href: "/about" },
-    { label: "Blog", href: "/blog" },
-    { label: "Careers", href: "/careers" },
     { label: "Contact", href: "/contact" },
   ],
   Legal: [
@@ -22,9 +20,9 @@ const columns = {
   ],
   Support: [
     { label: "Help centre", href: "/help" },
-    { label: "File a dispute", href: "/disputes" },
-    { label: "Verification FAQ", href: "/faq" },
-    { label: "Report a listing", href: "/report" },
+    { label: "File a dispute", href: "/dashboard/disputes/new" },
+    { label: "Verification FAQ", href: "/help#verification" },
+    { label: "Report a listing", href: "/contact?topic=listing" },
   ],
 };
 
@@ -56,15 +54,15 @@ export function Footer() {
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {Object.entries(columns).map(([section, items]) => (
               <div key={section} className="flex flex-col gap-3">
-                <h4 className="text-xs font-semibold text-zinc-400">
+                <h2 className="text-xs font-semibold text-zinc-300">
                   {section}
-                </h4>
+                </h2>
                 <ul className="flex flex-col gap-2.5">
                   {items.map(({ label, href }) => (
                     <li key={label}>
                       <Link
                         href={href}
-                        className="text-sm text-zinc-500 hover:text-zinc-200 transition-colors"
+                        className="text-sm text-zinc-400 hover:text-white transition-colors"
                       >
                         {label}
                       </Link>
@@ -84,11 +82,11 @@ export function Footer() {
           <div className="flex items-end justify-between">
             <Link
               href="/"
-              className="text-xs font-semibold tracking-tight text-zinc-600 hover:text-zinc-400 transition-colors"
+              className="text-xs font-semibold tracking-tight text-zinc-400 hover:text-zinc-200 transition-colors"
             >
               RentARide
             </Link>
-            <p className="text-xs text-zinc-700">
+            <p className="text-xs text-zinc-400">
               © 2026 Arthurite Integrated
             </p>
           </div>

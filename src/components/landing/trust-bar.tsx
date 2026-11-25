@@ -1,4 +1,3 @@
-import { Separator } from "@/components/ui/separator";
 import { ScrollReveal } from "./scroll-reveal";
 
 const makes = ["Toyota", "Honda", "Hyundai", "Ford", "Kia", "Lexus", "Peugeot", "Nissan"];

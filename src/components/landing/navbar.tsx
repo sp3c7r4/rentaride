@@ -7,15 +7,19 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Menu01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useSession } from "@/lib/session";
 
 const navLinks = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Browse Cars", href: "#browse" },
-  { label: "List Your Car", href: "#list" },
-  { label: "About", href: "#about" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Browse Cars", href: "/browse" },
+  { label: "List Your Car", href: "/#list" },
+  { label: "About", href: "/about" },
 ];
 
-export function Navbar() {
+/** `solid` keeps a white bar for pages without a dark hero (e.g. /browse). */
+export function Navbar({ solid = false }: { solid?: boolean }) {
+  const session = useSession();
+  const signedIn = session.status === "signed_in";
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -26,7 +30,7 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const isTransparent = !scrolled && !open;
+  const isTransparent = !solid && !scrolled && !open;
 
   return (
     <header
@@ -85,6 +89,20 @@ export function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden items-center gap-2 md:flex">
+          {signedIn ? (
+            <Link
+              href="/dashboard"
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                isTransparent
+                  ? "bg-white text-zinc-950 hover:bg-zinc-100"
+                  : "bg-zinc-900 text-white hover:bg-zinc-800",
+              )}
+            >
+              Dashboard
+            </Link>
+          ) : (
+          <>
           <Link
             href="/login"
             className={cn(
@@ -106,6 +124,8 @@ export function Navbar() {
           >
             Get started
           </Link>
+          </>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -149,6 +169,18 @@ export function Navbar() {
           </nav>
           <Separator className="my-4" />
           <div className="flex flex-col gap-2">
+            {signedIn ? (
+              <Link
+                href="/dashboard"
+                className={cn(
+                  buttonVariants({ size: "sm" }),
+                  "w-full justify-center bg-zinc-900 text-white hover:bg-zinc-800",
+                )}
+              >
+                Dashboard
+              </Link>
+            ) : (
+            <>
             <Link
               href="/login"
               className={cn(
@@ -167,6 +199,8 @@ export function Navbar() {
             >
               Get started
             </Link>
+            </>
+            )}
           </div>
         </div>
       )}
