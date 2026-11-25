@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RentARide
 
-## Getting Started
+Car-lease marketplace for Nigeria. One Next.js 16 app holds the frontend and
+the backend: Route Handlers for reads and webhooks, Server Actions for
+mutations, Postgres (Drizzle), Redis with a BullMQ worker, S3 storage,
+email over SMTP and Paystack for payments and payouts.
 
-First, run the development server:
+## Run it locally
+
+Needs Node 24 and Docker.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env          # then set AUTH_SECRET (command in the file)
+docker compose up -d          # Postgres, Redis, Mailpit, SeaweedFS (S3)
+npm run db:migrate
+npm run db:seed               # demo accounts, password: rentaride-demo
+npm run dev -- -p 3001        # app
+npm run worker                # second terminal: emails and scheduled jobs
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- App: http://localhost:3001
+- Email inbox (Mailpit): http://localhost:8026. Verification codes and receipts land here.
+- Demo accounts: `driver@demo.rentaride.ng`, `owner@demo.rentaride.ng`, `review@demo.rentaride.ng` (review console).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Without `PAYSTACK_SECRET_KEY`, development simulates payments, payouts and
+account-name lookups. Add Paystack **test** keys to `.env` to use the real
+checkout; for webhooks locally, expose the app with a tunnel and point the
+Paystack test webhook at `https://<tunnel>/api/webhooks/paystack`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Don't redirect the dev server's output to a file inside the project folder:
+the file watcher sees every log write as a change and reloads the page in a loop.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Script | What it does |
+|---|---|
+| `npm run dev` / `build` / `start` | Next.js |
+| `npm run worker` | BullMQ worker: email queue, daily repayment status (06:00), payouts (09:00 on the 5th), Africa/Lagos |
+| `npm run job -- repayments\|payouts` | Run a scheduled job now |
+| `npm run db:generate` | New migration from `src/server/db/schema.ts` |
+| `npm run db:migrate` | Apply migrations (`-- --test` for the test database) |
+| `npm run db:seed` / `db:reset` | Load demo data / wipe and reload it |
+| `npm test` | vitest (uses `rentaride_test`; run `npm run db:migrate -- --test` once) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/app` — pages, `api/**/route.ts` (reads, uploads, Paystack webhook), `files/[...key]` (access-checked downloads)
+- `src/server` — server-only code: `db`, `auth` (sessions, data access layer), `services` (business rules), `actions` (Server Actions), `paystack.ts`, `storage.ts`, `mail`, `queue`
+- `src/worker` — the worker process
+- `src/lib` — client code; `lib/api/*` calls the server with the same function names the pages use
+- `deploy/` — EC2 deployment (Dockerfile at the root, compose, nginx, guide)
