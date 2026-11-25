@@ -1,89 +1,136 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { type FormEvent, useState } from "react";
+import { PasswordInput } from "@/components/auth/password-input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { buttonVariants } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
+import { homeFor, safeNext, signIn } from "@/lib/auth";
+import {
+  DEMO_DRIVER_EMAIL,
+  DEMO_OWNER_EMAIL,
+  DEMO_REVIEWER_EMAIL,
+} from "@/lib/mock/seed";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+
+    const form = new FormData(e.currentTarget);
+    const res = await signIn(
+      String(form.get("email")).trim().toLowerCase(),
+      String(form.get("password")),
+    );
+
+    if (!res.ok) {
+      setError(res.error);
+      setSubmitting(false);
+      return;
+    }
+    // The account exists but the email was never confirmed: a new code was sent.
+    if ("verifyEmail" in res) {
+      router.push("/verify-email");
+      return;
+    }
+    const next = safeNext(
+      new URLSearchParams(window.location.search).get("next"),
+    );
+    router.push(
+      res.user.onboarded && !res.user.staff && next ? next : homeFor(res.user),
+    );
+  }
+
   return (
-    <div className="w-full max-w-sm flex flex-col gap-8">
-      {/* Heading */}
-      <div className="flex flex-col gap-1.5">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
-          Welcome back
-        </h1>
-        <p className="text-sm text-zinc-500">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/signup"
-            className="font-medium text-zinc-900 underline underline-offset-4 hover:text-amber-600 transition-colors"
-          >
-            Sign up
-          </Link>
+    <div className="flex w-full max-w-md flex-col gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Sign in to manage your bookings, vehicles and payments.
         </p>
       </div>
 
-      {/* Form */}
-      <form action="/dashboard" method="GET" className="flex flex-col gap-5">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email address</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="emeka@example.com"
-            autoComplete="email"
-            required
-          />
-        </div>
+      <form onSubmit={handleSubmit}>
+        <FieldGroup className="gap-5">
+          <Field>
+            <FieldLabel htmlFor="email">Email address</FieldLabel>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="emeka@example.com"
+              autoComplete="email"
+              className="h-11"
+              disabled={submitting}
+              required
+            />
+          </Field>
 
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link
-              href="/forgot-password"
-              className="text-xs text-zinc-500 hover:text-zinc-900 transition-colors"
-            >
-              Forgot password?
-            </Link>
-          </div>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="Your password"
-            autoComplete="current-password"
-            required
-          />
-        </div>
+          <Field>
+            <div className="flex items-center justify-between">
+              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <PasswordInput
+              id="password"
+              name="password"
+              placeholder="Your password"
+              autoComplete="current-password"
+              disabled={submitting}
+              required
+            />
+          </Field>
 
-        <button
-          type="submit"
-          className={cn(
-            buttonVariants({ size: "lg" }),
-            "w-full bg-zinc-900 text-white hover:bg-zinc-800 mt-1"
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
-        >
-          Sign in
-        </button>
+
+          <Button
+            type="submit"
+            size="lg"
+            className="h-11 w-full"
+            disabled={submitting}
+          >
+            {submitting && <Spinner data-icon="inline-start" />}
+            {submitting ? "Signing in…" : "Sign in"}
+          </Button>
+        </FieldGroup>
       </form>
 
-      <div className="flex items-center gap-3">
-        <Separator className="flex-1" />
-        <span className="text-xs text-zinc-400">or</span>
-        <Separator className="flex-1" />
-      </div>
+      {process.env.NODE_ENV === "development" && (
+        <Alert>
+          <AlertDescription>
+            Demo accounts: {DEMO_DRIVER_EMAIL}, {DEMO_OWNER_EMAIL}, or{" "}
+            {DEMO_REVIEWER_EMAIL} for the review console. Password:{" "}
+            <code className="font-mono">rentaride-demo</code>
+          </AlertDescription>
+        </Alert>
+      )}
 
-      <p className="text-xs text-zinc-400 text-center leading-relaxed">
+      <p className="text-sm text-muted-foreground">
         New to RentARide?{" "}
         <Link
           href="/signup"
-          className="font-medium text-zinc-600 underline underline-offset-4 hover:text-zinc-900 transition-colors"
+          className="font-medium text-foreground underline underline-offset-4"
         >
           Create an account
-        </Link>{" "}
-        — it only takes a minute.
+        </Link>
       </p>
     </div>
   );
